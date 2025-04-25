@@ -46,7 +46,7 @@ Connect your VPCs to your on-premises networks using [AWS Virtual Private Networ
 # Getting started with Amazon VPC
 Your AWS account includes a [default VPC](https://docs.aws.amazon.com/vpc/latest/userguide/default-vpc.html) in each AWS Region. Your default VPCs are configured such that you can immediately start launching and connecting to EC2 instances. For more information, see [Plan your VPC](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-getting-started.html).
 
-You can choose to create additional VPCs with the subnets, IP addresses, gateways and routing that you need. For more information, see [Create a VP](https://docs.aws.amazon.com/vpc/latest/userguide/create-vpc.html)C.
+You can choose to create additional VPCs with the subnets, IP addresses, gateways and routing that you need. For more information, see [Create a VPC](https://docs.aws.amazon.com/vpc/latest/userguide/create-vpc.html).
 
 # Working with Amazon VPC
 You can create and manage your VPCs using any of the following interfaces:
