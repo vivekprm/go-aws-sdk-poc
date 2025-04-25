@@ -4,7 +4,7 @@ With Amazon Virtual Private Cloud (Amazon VPC), you can launch AWS resources in 
 
 The following diagram shows an example VPC. The VPC has one subnet in each of the Availability Zones in the Region, EC2 instances in each subnet, and an internet gateway to allow communication between the resources in your VPC and the internet.
 
-pic
+![image](https://github.com/user-attachments/assets/85756899-6d97-4167-b6ee-e1e898bf0e5f)
 
 For more information, see [Amazon Virtual Private Cloud (Amazon VPC)](https://aws.amazon.com/vpc/).
 
