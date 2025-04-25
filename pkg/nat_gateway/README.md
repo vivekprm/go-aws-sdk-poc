@@ -19,7 +19,7 @@ If you use a public NAT gateway to connect to a transit gateway or virtual priva
 
 NAT gateways support traffic with a maximum transmission unit (MTU) of 8500. For more information, see [NAT gateway basic](https://docs.aws.amazon.com/vpc/latest/userguide/nat-gateway-basics.html)s.
 
-# NAT gateway basic
+# [NAT gateway basic](https://docs.aws.amazon.com/vpc/latest/userguide/nat-gateway-basics.html)
 Each NAT gateway is created in a specific Availability Zone and implemented with redundancy in that zone. There is a quota on the number of NAT gateways that you can create in each Availability Zone. For more information, see [Amazon VPC quotas](https://docs.aws.amazon.com/vpc/latest/userguide/amazon-vpc-limits.html).
 
 If you have resources in multiple Availability Zones and they share one NAT gateway, and if the NAT gateway’s Availability Zone is down, resources in the other Availability Zones lose internet access. To improve resiliency, create a NAT gateway in each Availability Zone, and configure your routing to ensure that resources use the NAT gateway in the same Availability Zone.
