@@ -1,0 +1,5 @@
+There are three approaches for enabling hybrid connectivity (securely connecting your cloud resources with your on-premises data centers):
+
+- **One-to-one connectivity** — In this setup, a VPN connection and/or Direct Connect private VIF is created for every VPC. This is accomplished by using the **virtual private gateway (VGW)**. This option is great for small numbers of VPCs, but as a customer scales their VPCs, managing hybrid connectivity per VPC can become difficult.
+- **Edge consolidation** — In this setup, customers consolidate hybrid IT connectivity for multiple VPCs at a single endpoint. All the VPCs share these hybrid connections. This is accomplished by using **AWS Transit Gateway** and the **AWS Direct Connect gateway**.
+- **Full mesh hybrid consolidation** — In this setup, customers consolidate connectivity for multiple VPCs at a single endpoint using CloudWAN, built on AWS Transit Gateway. This is a full policy-based approach to networking in one or more AWS accounts, represented in code. At this time, using AWS Direct Connect for edge connectivity requires peering Transit Gateway to CloudWAN.
