@@ -223,3 +223,6 @@ For a production environment, you can use one of the following services to deplo
 
 ### Development or test environment
 For a development or test environment, you might choose to launch a single EC2 instance. For more information, see [Get started with Amazon EC2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EC2_GetStarted.html) in the Amazon EC2 User Guide.
+
+# VPC CIDR blocks
+https://docs.aws.amazon.com/vpc/latest/userguide/vpc-cidr-blocks.html

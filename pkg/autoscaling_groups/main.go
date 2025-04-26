@@ -30,7 +30,7 @@ func main() {
 	cli := getClient(profile)
 	pcli := getClient(pprofile)
 
-	// createAutoscalingGroup(pcli)
+	createAutoscalingGroup(pcli)
 	deleteAutoscalingGroup(pcli)
 
 	// Build the request with its input parameters
@@ -65,7 +65,7 @@ func createAutoscalingGroup(cli *autoscaling.Client) {
 func deleteAutoscalingGroup(cli *autoscaling.Client) {
 	resp, err := cli.DeleteAutoScalingGroup(context.TODO(), &autoscaling.DeleteAutoScalingGroupInput{
 		AutoScalingGroupName: aws.String("my-asg"),
-		ForceDelete: aws.Bool(true),
+		ForceDelete:          aws.Bool(true),
 	})
 	if err != nil {
 		log.Fatal(err)
