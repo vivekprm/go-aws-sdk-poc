@@ -1,6 +1,7 @@
 # VPC to VPC connectivity
 Customers can use two different VPC connectivity patterns to set up multi-VPC environments: many to many, or hub and spoke. In the many-to-many approach, the traffic between each VPC is managed individually between each VPC. In the hub-and-spoke model, all inter-VPC traffic flows through a central resource, which routes traffic based on established rules.
 
+# VPC Peering
 The first way to connect two VPCs is to use VPC peering. In this setup, a connection enables full bidirectional connectivity between the VPCs. This peering connection is used to route traffic between the VPCs. **VPCs in different accounts and AWS Regions can also be peered together**. 
 
 **All data transfer over a VPC peering connection that stays within an Availability Zone is free**. All data transfer over a VPC peering connection that crosses Availability Zones is charged at the standard in-region data transfer rates. If the VPCs are peered across Regions, standard inter-Region data transfer charges will apply.
@@ -9,7 +10,7 @@ VPC peering is point-to-point connectivity, and it does not support [transitive 
 
 At scale, when you have tens or hundreds of VPCs, interconnecting them with peering can result in a mesh of hundreds or thousands of peering connections. A large number of connections can be difficult to manage and scale. For example, if you have 100 VPCs and you want to setup a full mesh peering between them, it will take 4,950 peering connections [n(n-1)/2] where n is the total number of VPCs. **There is a maximum limit of 125 active peering connections per VPC**.
 
-pic
+![image](https://github.com/user-attachments/assets/052738ab-e755-46e4-bc4c-99832c1f74c1)
 
 If you are using VPC peering, on-premises connectivity (VPN and/or Direct Connect) must be made to each VPC. Resources in a VPC cannot reach on-premises using the hybrid connectivity of a peered VPC, as shown in the preceding figure.
 
