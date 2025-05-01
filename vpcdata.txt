@@ -1,0 +1,1 @@
+{"vpcID":"vpc-0391bbc8799cc6086","securityGroupID":"sg-0b6e1fa5e0679300c","subnetID":"subnet-07397412d309b281e","routeTableID":"rtb-0ef2dd71449b78568"}
