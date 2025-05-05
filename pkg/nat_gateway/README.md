@@ -1,3 +1,6 @@
+# Nat Gateways
+https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html
+
 A NAT gateway is a Network Address Translation (NAT) service. You can use a NAT gateway so that instances in a private subnet can connect to services outside your VPC but external services can't initiate a connection with those instances.
 
 When you create a NAT gateway, you specify one of the following connectivity types:
