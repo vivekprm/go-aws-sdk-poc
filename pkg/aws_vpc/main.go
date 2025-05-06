@@ -37,7 +37,7 @@ func main() {
 	sid := awssg.CreateSecurityGroup(cli, sgID, vpcID)
 
 	// vpcID := aws.String("vpc-09768d14cd79a0fcf")
-	subnet := awsvpc.CreateSubnet(cli, vpcID, "ap-south-1a", "10.0.0.0/24")
+	subnet := awsvpc.CreateSubnet(cli, vpcID, "ap-south-1a", "10.0.0.0/24", awsvpc.SubnetTypePrivate)
 	rtbID := awsvpc.CreateRouteTable(cli, subnet, vpcID)
 
 	fmt.Printf("subnet 1: %s\n", *subnet)

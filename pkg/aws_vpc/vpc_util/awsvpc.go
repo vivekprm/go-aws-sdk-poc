@@ -11,6 +11,13 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 )
 
+type SubnetType string
+
+const (
+	SubnetTypePublic  SubnetType = "public"
+	SubnetTypePrivate SubnetType = "private"
+)
+
 type VpcInfo struct {
 	VpcID           string `json:"vpcID"`
 	SecurityGroupID string `json:"securityGroupID"`
@@ -41,8 +48,9 @@ func CreateVpc(cli *ec2.Client, vpcCIDR string) *ec2.CreateVpcOutput {
 	return resp
 }
 
-func CreateSubnet(cli *ec2.Client, vpcID *string, az, subnetCIDR string) *string {
-	resp1, err := cli.CreateSubnet(context.TODO(), &ec2.CreateSubnetInput{
+func CreateSubnet(cli *ec2.Client, vpcID *string, az, subnetCIDR string, subnetType SubnetType) *string {
+	ctx := context.Background()
+	resp1, err := cli.CreateSubnet(ctx, &ec2.CreateSubnetInput{
 		VpcId:            vpcID,
 		AvailabilityZone: aws.String(az),
 		CidrBlock:        aws.String(subnetCIDR),
@@ -63,6 +71,16 @@ func CreateSubnet(cli *ec2.Client, vpcID *string, az, subnetCIDR string) *string
 		log.Fatalf("Creation of subnet1 failed: %v\n", err)
 	}
 	log.Printf("Creation of subnet1 successful: %v\n", *resp1.Subnet.SubnetId)
+
+	if subnetType == SubnetTypePrivate {
+		return resp1.Subnet.SubnetId
+	}
+	cli.ModifySubnetAttribute(ctx, &ec2.ModifySubnetAttributeInput{
+		SubnetId: resp1.Subnet.SubnetId,
+		MapPublicIpOnLaunch: &types.AttributeBooleanValue{
+			Value: aws.Bool(true),
+		},
+	})
 	return resp1.Subnet.SubnetId
 }
 

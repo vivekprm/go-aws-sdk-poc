@@ -34,12 +34,12 @@ func main() {
 	vpcInfo := awsvpc.GetVPCData()
 
 	vpc1 := awsvpc.CreateVpc(cli, "192.168.0.0/16")
-	subnet1 := awsvpc.CreateSubnet(cli, vpc1.Vpc.VpcId, "ap-south-1a", "192.168.0.0/24")
+	subnet1 := awsvpc.CreateSubnet(cli, vpc1.Vpc.VpcId, "ap-south-1a", "192.168.0.0/24", awsvpc.SubnetTypePrivate)
 	rtb1 := awsvpc.CreateRouteTable(cli, subnet1, vpc1.Vpc.VpcId)
 	sg1 := awssg.CreateSecurityGroup(cli, aws.String("vivekm-ap-s1c-sg"), vpc1.Vpc.VpcId)
 
 	vpc2 := awsvpc.CreateVpc(cliUs, "172.16.0.0/16")
-	subnet2 := awsvpc.CreateSubnet(cliUs, vpc2.Vpc.VpcId, "us-east-1a", "172.16.0.0/24")
+	subnet2 := awsvpc.CreateSubnet(cliUs, vpc2.Vpc.VpcId, "us-east-1a", "172.16.0.0/24", awsvpc.SubnetTypePrivate)
 	rtb2 := awsvpc.CreateRouteTable(cliUs, subnet2, vpc2.Vpc.VpcId)
 	sg2 := awssg.CreateSecurityGroup(cliUs, aws.String("vivekm-us-s1a-sg"), vpc2.Vpc.VpcId)
 
