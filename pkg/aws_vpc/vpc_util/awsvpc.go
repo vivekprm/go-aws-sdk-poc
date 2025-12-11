@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"os"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -118,6 +119,7 @@ func CreateRouteTable(cli *ec2.Client, subnetID, vpcID *string) *string {
 
 func CreateInstance(cli *ec2.Client, subnet1Id *string, sgID, amiID string) *string {
 	ctx := context.Background()
+	waiter := ec2.NewInstanceRunningWaiter(cli)
 	resp1, err := cli.RunInstances(ctx, &ec2.RunInstancesInput{
 		ImageId:          aws.String(amiID),
 		InstanceType:     types.InstanceTypeT2Micro,
@@ -142,6 +144,17 @@ func CreateInstance(cli *ec2.Client, subnet1Id *string, sgID, amiID string) *str
 		log.Fatalf("Unable to create instance %v\n", err)
 	}
 	log.Printf("Instance created successfully: %s", *resp1.Instances[0].InstanceId)
+
+	// Wait for the instance to be in running state
+	defer func() {
+		if err := waiter.Wait(ctx, &ec2.DescribeInstancesInput{
+			InstanceIds: []string{*resp1.Instances[0].InstanceId},
+		}, 5*time.Minute); err != nil {
+			log.Fatalf("Error waiting for instance to be running: %v\n", err)
+		}
+		log.Println("Instance is now running")
+	}()
+
 	return resp1.Instances[0].InstanceId
 }
 
