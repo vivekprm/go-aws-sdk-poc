@@ -149,7 +149,7 @@ func CreateInstance(cli *ec2.Client, subnet1Id *string, sgID, amiID string) *str
 	defer func() {
 		if err := waiter.Wait(ctx, &ec2.DescribeInstancesInput{
 			InstanceIds: []string{*resp1.Instances[0].InstanceId},
-		}, 5*time.Minute); err != nil {
+		}, 10*time.Minute); err != nil {
 			log.Fatalf("Error waiting for instance to be running: %v\n", err)
 		}
 		log.Println("Instance is now running")
@@ -190,4 +190,27 @@ func CreateEc2InstanceConnect(cli *ec2.Client, subnetID *string, sgIDs []string)
 	}
 	log.Printf("Instance connect endpoint created successfully: %s", *resp.InstanceConnectEndpoint.InstanceConnectEndpointId)
 	return resp.InstanceConnectEndpoint.InstanceConnectEndpointId
+}
+
+func CreateNatGateway(ctx context.Context, cli *ec2.Client, subnetID *string) *string {
+	out, err := cli.CreateNatGateway(ctx, &ec2.CreateNatGatewayInput{
+		SubnetId:         subnetID,
+		ConnectivityType: types.ConnectivityTypePrivate,
+		TagSpecifications: []types.TagSpecification{
+			{
+				ResourceType: types.ResourceTypeNatgateway,
+				Tags: []types.Tag{
+					{
+						Key:   aws.String("created-by"),
+						Value: aws.String("vivek"),
+					},
+				},
+			},
+		},
+	})
+	if err != nil {
+		log.Fatalf("Error in creating NAT Gateway: %v\n", err)
+	}
+	log.Printf("NAT Gateway created successfully: %s\n", *out.NatGateway.NatGatewayId)
+	return out.NatGateway.NatGatewayId
 }

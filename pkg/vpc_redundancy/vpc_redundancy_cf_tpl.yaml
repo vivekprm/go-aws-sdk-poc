@@ -1,0 +1,110 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Capture AWS NAT Gateway & EC2 Instances management events and send them to SQS via EventBridge.
+Resources:
+  CloudTrailBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "management-event-logs-${AWS::AccountId}"
+      VersioningConfiguration:
+        Status: Enabled
+  CloudTrailBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref CloudTrailBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AWSCloudTrailAclCheck
+            Effect: Allow
+            Principal:
+              Service: cloudtrail.amazonaws.com
+            Action: s3:GetBucketAcl
+            Resource: !GetAtt CloudTrailBucket.Arn
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub "arn:aws:cloudtrail:${AWS::Region}:${AWS::AccountId}:trail/management-events-trail"
+          - Sid: AWSCloudTrailWrite
+            Effect: Allow
+            Principal:
+              Service: cloudtrail.amazonaws.com
+            Action: s3:PutObject
+            Resource: !Sub "${CloudTrailBucket.Arn}/AWSLogs/${AWS::AccountId}/*"
+            Condition:
+              StringEquals:
+                s3:x-amz-acl: "bucket-owner-full-control"
+                AWS:SourceArn: !Sub "arn:aws:cloudtrail:${AWS::Region}:${AWS::AccountId}:trail/management-events-trail"
+  ManagementEventsTrail:
+    Type: AWS::CloudTrail::Trail
+    DependsOn: CloudTrailBucketPolicy
+    Properties:
+      TrailName: management-events-trail
+      S3BucketName: !Ref CloudTrailBucket
+      IsMultiRegionTrail: true
+      IncludeGlobalServiceEvents: true
+      IsLogging: true
+      EventSelectors:
+        - ReadWriteType: All
+          IncludeManagementEvents: true
+  RedundancyEventsQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: redundancy-events-queue
+      Tags:
+        - Key: SiteName
+          Value: {{.SiteName}}
+        - Key: PocType
+          Value: vpc-redundancy
+  RedundancyEventsQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref RedundancyEventsQueue
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AllowEventBridgeToSendMessages
+            Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+            Action: "sqs:SendMessage"
+            Resource: !GetAtt RedundancyEventsQueue.Arn
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !GetAtt RedundancyEventsRule.Arn
+  RedundancyEventsRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: RedundancyManagementEvents
+      Description: Capture NAT Gateway & EC2 Instances deletion/disassociation events from CloudTrail.
+      EventPattern:
+        source:
+          - "aws.ec2"
+        detail-type:
+          - "AWS API Call via CloudTrail"
+        detail:
+          eventSource:
+            - "ec2.amazonaws.com"
+          eventName:
+            - "DeleteNatGateway"
+            - "DisassociateNatGatewayAddress"
+            - "StopInstances"
+            - "TerminateInstances"
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt RedundancyEventsQueue.Arn
+          Id: RedundancyEventsSQSTarget
+      Tags:
+        - Key: SiteName
+          Value: {{.SiteName}}
+        - Key: PocType
+          Value: vpc-redundancy
+Outputs:
+  EventBridgeRuleName:
+    Value: !Ref RedundancyEventsRule
+    Description: Redundancy EventBridge Rule
+  SQSQueueURL:
+    Value: !Ref RedundancyEventsQueue
+    Description: URL of the SQS queue receiving redundancy events
+  SQSQueueArn:
+    Value: !GetAtt RedundancyEventsQueue.Arn
+    Description: ARN of the SQS queue receiving redundancy events

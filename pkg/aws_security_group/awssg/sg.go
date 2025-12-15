@@ -32,7 +32,7 @@ func CreateSecurityGroup(cli *ec2.Client, name, vpcID *string) *string {
 	}
 	log.Printf("Security group created successfully: %s\n", *resp.GroupId)
 
-	out, err := cli.AuthorizeSecurityGroupIngress(ctx, &ec2.AuthorizeSecurityGroupIngressInput{
+	_, err = cli.AuthorizeSecurityGroupIngress(ctx, &ec2.AuthorizeSecurityGroupIngressInput{
 		GroupId: resp.GroupId,
 		IpPermissions: []types.IpPermission{
 			{
@@ -50,7 +50,7 @@ func CreateSecurityGroup(cli *ec2.Client, name, vpcID *string) *string {
 	if err != nil {
 		log.Fatalf("Error in modifying security group rules: %v\n", err)
 	}
-	log.Printf("Security group rules modification successful: %v\n", out.ResultMetadata)
+	log.Printf("Security group rules modification successful: %s\n", *resp.GroupId)
 	return resp.GroupId
 }
 
