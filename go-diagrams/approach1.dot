@@ -1,0 +1,35 @@
+digraph root {
+	fontcolor="#2D3436";
+	fontname="Sans-Serif";
+	fontsize=13;
+	label="Approach 1";
+	nodesep=0.6;
+	pad=2;
+	rankdir=LR;
+	ranksep=0.75;
+	splines=ortho;
+	buyjbypo->ztghbxdy[ color="#7B8894", dir=forward, fontcolor="#2D3436", fontname="Sans-Serif", fontsize=13 ];
+	ztghbxdy->xvsndlxj[ color="#7B8894", dir=forward, fontcolor="#2D3436", fontname="Sans-Serif", fontsize=13 ];
+	xvsndlxj->dutgebwu[ color="#7B8894", dir=forward, fontcolor="#2D3436", fontname="Sans-Serif", fontsize=13 ];
+	dutgebwu->emqeoaot[ color="#7B8894", dir=forward, fontcolor="#2D3436", fontname="Sans-Serif", fontsize=13 ];
+	zhbzkvyi->buyjbypo[ color="#7B8894", dir=forward, fontcolor="#2D3436", fontname="Sans-Serif", fontsize=13 ];
+	subgraph cluster_AWS {
+	bgcolor="#E5F5FD";
+	fontcolor="#2D3436";
+	fontname="Sans-Serif";
+	fontsize=12;
+	labeljust=l;
+	pencolor="#AEB6BE";
+	shape=box;
+	style=rounded;
+
+}
+;
+	buyjbypo [ fixedsize=true, fontcolor="#2D3436", fontname="Sans-Serif", fontsize=13, height=1.7999999999999998, image="assets/aws/storage/simple-storage-service-s3.png", imagescale=true, label=S3, labelloc=b, shape=none, style=rounded, width=1.4 ];
+	dutgebwu [ fixedsize=true, fontcolor="#2D3436", fontname="Sans-Serif", fontsize=13, height=1.7999999999999998, image="assets/aws/integration/simple-queue-service-sqs.png", imagescale=true, label=SQS, labelloc=b, shape=none, style=rounded, width=1.4 ];
+	emqeoaot [ fixedsize=true, fontcolor="#2D3436", fontname="Sans-Serif", fontsize=13, height=1.7999999999999998, image="assets/generic/compute/rack.png", imagescale=true, label="GC Service", labelloc=b, shape=none, style=rounded, width=1.4 ];
+	xvsndlxj [ fixedsize=true, fontcolor="#2D3436", fontname="Sans-Serif", fontsize=13, height=1.7999999999999998, image="assets/aws/compute/lambda.png", imagescale=true, label=Lambda, labelloc=b, shape=none, style=rounded, width=1.4 ];
+	zhbzkvyi [ fixedsize=true, fontcolor="#2D3436", fontname="Sans-Serif", fontsize=13, height=1.7999999999999998, image="assets/aws/management/cloudtrail.png", imagescale=true, label=CloudTrail, labelloc=b, shape=none, style=rounded, width=1.4 ];
+	ztghbxdy [ fixedsize=true, fontcolor="#2D3436", fontname="Sans-Serif", fontsize=13, height=1.7999999999999998, image="assets/aws/integration/eventbridge.png", imagescale=true, label=EventBridge, labelloc=b, shape=none, style=rounded, width=1.4 ];
+
+}

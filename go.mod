@@ -3,6 +3,7 @@ module awspoc
 go 1.23.2
 
 require (
+	github.com/awalterschulze/gographviz v0.0.0-20200901124122-0eecad45bd71 // indirect
 	github.com/aws/aws-sdk-go v1.55.6 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.41.0 // indirect
 	github.com/aws/aws-sdk-go-v2/config v1.29.13 // indirect
@@ -21,6 +22,9 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.30.1 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.33.18 // indirect
 	github.com/aws/smithy-go v1.24.0 // indirect
+	github.com/blushft/go-diagrams v0.0.0-20250322201119-d91ac4ca5de4 // indirect
+	github.com/google/uuid v1.1.2 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
+	golang.org/x/net v0.0.0-20190620200207-3b0461eec859 // indirect
 )
