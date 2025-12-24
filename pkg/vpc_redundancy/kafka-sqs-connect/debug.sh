@@ -21,6 +21,7 @@ curl http://localhost:8083/connectors/camel-sqs-source/config | jq
 curl http://localhost:8083/connectors/camel-sqs-source/status | jq
 
 # To connect to kafka cluster
+# modify /etc/hosts to add kafka localhost entry
 kcat -L -b kafka:9092
 kcat -b kafka:9092 -t redundancy-events
 echo "hello world" | kcat -b kafka:9092 -P -t redundancy-events 
