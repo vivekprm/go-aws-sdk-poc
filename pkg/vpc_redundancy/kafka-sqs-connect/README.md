@@ -19,3 +19,6 @@ Check logs:
 ```sh
 docker logs kafka-connect | grep -i plugin
 ```
+
+# To use Kafka with ngrok
+https://rmoff.net/2023/11/01/using-apache-kafka-with-ngrok/
