@@ -1,20 +1,23 @@
 {
-    "name": "sqs-source-connector",
-    "config": {
-        "connector.class": "io.confluent.connect.sqs.source.SqsSourceConnector",
-        "tasks.max": "1",
-        "sqs.url": "https://sqs.ap-south-1.amazonaws.com/643716337869/redundancy-events-queue",
-        "confluent.topic.bootstrap.servers": "kafka:9092",
-        "aws.region": "ap-south-1",
-        "aws.access.key.id": "",
-        "aws.secret.key.id": "",
-        "kafka.topic": "redundancy-events",
-        "polling.wait.time.ms": "20000",
-        "visibility.timeout.ms": "30000",
-        "max.number.of.messages": "10",
-        "behavior.on.error": "log",
-        "key.converter": "org.apache.kafka.connect.storage.StringConverter",
-        "value.converter": "org.apache.kafka.connect.json.JsonConverter",
-        "value.converter.schemas.enable": "false"
-    }
+  "name": "camel-aws2sqs-source",
+  "config": {
+    "connector.class": "org.apache.camel.kafkaconnector.aws2sqs.CamelAws2sqsSourceConnector",
+    "tasks.max": "1",
+
+    "topics": "aws.sqs.events",
+
+    "camel.source.endpoint.queueName": "redundancy-events",
+    "camel.source.endpoint.region": "ap-south-1",
+
+    "camel.source.endpoint.deleteAfterRead": "true",
+    "camel.source.endpoint.waitTimeSeconds": "20",
+    "camel.source.endpoint.maxMessagesPerPoll": "10",
+
+    "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+    "value.converter": "org.apache.kafka.connect.storage.StringConverter",
+
+    "errors.tolerance": "all",
+    "errors.log.enable": "true",
+    "errors.log.include.messages": "true"
+  }
 }

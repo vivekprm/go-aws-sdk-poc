@@ -29,7 +29,7 @@ services:
   kafka-connect:
     image: confluentinc/cp-kafka-connect-base:8.1.1
     volumes:
-    - ./plugins:/usr/share/java/plugins
+    - ./plugins:/usr/share/connect/plugins
     container_name: kafka-connect
     depends_on:
       - kafka
@@ -48,7 +48,7 @@ services:
       CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
       CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.storage.StringConverter"
       CONNECT_VALUE_CONVERTER: "org.apache.kafka.connect.storage.StringConverter"
-      CONNECT_PLUGIN_PATH: "/usr/share/java/plugins"
+      CONNECT_PLUGIN_PATH: "/usr/share/connect/plugins"
       # CONNECT_LOG4J_ROOT_LOGLEVEL: "DEBUG"
       AWS_REGION: ap-south-1
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
