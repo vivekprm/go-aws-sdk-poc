@@ -53,6 +53,11 @@ plugins
         ├── jackson-dataformat-avro-2.15.2.jar
         └── jctools-core-3.3.0.jar
 
+After extracting the we need to add below extra jar inside lib:
+```sh
+curl https://repo1.maven.org/maven2/com/fasterxml/jackson/dataformat/jackson-dataformat-avro/2.15.2/jackson-dataformat-avro-2.15.2.jar -o jackson-dataformat-avro-2.15.2.jar
+curl https://repo1.maven.org/maven2/org/jctools/jctools-core/3.3.0/jctools-core-3.3.0.jar -o jctools-core-3.3.0.jar
+```
 docker-compose as below:
 ```yaml
 version: "3.9"
