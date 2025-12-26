@@ -1,28 +1,61 @@
 version: "3.9"
 
 services:
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: ngrok
+    # Sign up for an ngrok account at https://dashboard.ngrok.com/signup
+    # Get your auth-token from https://dashboard.ngrok.com/get-started/your-authtoken
+    # and either put it directly in the file here, or write it to a .env file in 
+    # the same folder as this Docker Compose file in the form
+    # NGROK_AUTH_TOKEN=your_token_value
+    command: tcp kafka:9092 --log stdout --authtoken $NGROK_AUTH_TOKEN
+    ports:
+      - 4040:4040 # Web dashboard for ngrok
   kafka:
     image: confluentinc/cp-kafka:8.1.1
     container_name: kafka
     hostname: kafka
+    depends_on:
+      - ngrok
     ports:
       - "9092:9092"
+      - "29092:29092"
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: "broker,controller"
       KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"
       KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
       KAFKA_KRAFT_CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
-      KAFKA_LISTENERS: "PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093"
-      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092"
-      KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT"
+      KAFKA_LISTENERS: "INTERNAL://0.0.0.0:29092,CONTROLLER://0.0.0.0:9093,NGROK://0.0.0.0:9092"
+      KAFKA_ADVERTISED_LISTENERS: "INTERNAL://kafka:29092"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "INTERNAL"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "INTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT,NGROK:PLAINTEXT"
       KAFKA_LOG_DIRS: "/var/lib/kafka/data"
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_CREATE_TOPICS: "redundancy-events:1:1"
+    entrypoint: 
+      - /bin/sh 
+      - -c 
+      - |
+        echo "Waiting for ngrok tunnel to be created"
+        while : ; do
+          curl_status=$$(curl -s -o /dev/null -w %{http_code} http://ngrok:4040/api/tunnels/command_line)
+          echo -e $$(date) "\tTunnels API HTTP state: " $$curl_status " (waiting for 200)"
+          if [ $$curl_status -eq 200 ] ; then
+            break
+          fi
+          sleep 5 
+        done
+        echo "ngrok tunnel is up"
+        NGROK_LISTENER=$(curl -s  http://ngrok:4040/api/tunnels/command_line | grep -Po '"public_url":.*?[^\\]",' | cut -d':' -f2- | tr -d ',"' | sed 's/tcp:\/\//NGROK:\/\//g')
+        echo $$NGROK_LISTENER
+        export KAFKA_ADVERTISED_LISTENERS="$$KAFKA_ADVERTISED_LISTENERS, $$NGROK_LISTENER"
+        echo "KAFKA_ADVERTISED_LISTENERS is set to " $$KAFKA_ADVERTISED_LISTENERS
+        /etc/confluent/docker/run
     volumes:
       - kafka-data:/var/lib/kafka/data
 
@@ -36,7 +69,7 @@ services:
     ports:
       - "8083:8083"
     environment:
-      CONNECT_BOOTSTRAP_SERVERS: "kafka:9092"
+      CONNECT_BOOTSTRAP_SERVERS: "kafka:29092"
       CONNECT_REST_PORT: 8083
       CONNECT_REST_ADVERTISED_HOST_NAME: kafka-connect
       CONNECT_GROUP_ID: "connect-cluster"
