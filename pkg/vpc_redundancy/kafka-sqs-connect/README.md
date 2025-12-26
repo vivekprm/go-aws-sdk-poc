@@ -26,11 +26,21 @@ https://rmoff.net/2023/11/01/using-apache-kafka-with-ngrok/
 # Running camel-sqs-kafka plugin in linux
 Make sure plugin directory looks like below:
 
-plugins
-└── camel-aws-sqs
+camel-aws2-sqs-kafka-connector
     ├── camel-aws2-sqs-kafka-connector-0.11.5.jar
     ├── camel-kafka-connector-0.11.5.jar
     └── lib
+        ├── annotations-13.0.jar
+        ├── annotations-2.16.88.jar
+        ├── apache-client-2.16.88.jar
+        ├── apicurio-registry-common-1.3.2.Final.jar
+        ├── apicurio-registry-rest-client-1.3.2.Final.jar
+        ├── apicurio-registry-utils-converter-1.3.2.Final.jar
+        ├── apicurio-registry-utils-serde-1.3.2.Final.jar
+        ├── auth-2.16.88.jar
+        ├── avro-1.10.2.jar
+        ├── aws-core-2.16.88.jar
+        ├── aws-query-protocol-2.16.88.jar
         ├── camel-api-3.11.5.jar
         ├── camel-aws2-sqs-3.11.5.jar
         ├── camel-aws2-sqs-kafka-connector-0.11.5.jar
@@ -50,8 +60,53 @@ plugins
         ├── camel-seda-3.11.5.jar
         ├── camel-support-3.11.5.jar
         ├── camel-util-3.11.5.jar
+        ├── commons-codec-1.15.jar
+        ├── commons-compress-1.20.jar
+        ├── commons-io-2.10.0.jar
+        ├── commons-logging-1.2.jar
+        ├── eventstream-1.0.1.jar
+        ├── http-client-spi-2.16.88.jar
+        ├── httpclient-4.5.13.jar
+        ├── httpcore-4.4.14.jar
         ├── jackson-dataformat-avro-2.15.2.jar
-        └── jctools-core-3.3.0.jar
+        ├── javax.annotation-api-1.3.2.jar
+        ├── jboss-jaxrs-api_2.1_spec-2.0.1.Final.jar
+        ├── jctools-core-3.3.0.jar
+        ├── kafka-clients-2.8.0.jar
+        ├── kotlin-reflect-1.3.20.jar
+        ├── kotlin-stdlib-1.3.20.jar
+        ├── kotlin-stdlib-common-1.3.20.jar
+        ├── lz4-java-1.7.1.jar
+        ├── medeia-validator-core-1.1.1.jar
+        ├── medeia-validator-jackson-1.1.1.jar
+        ├── metrics-spi-2.16.88.jar
+        ├── netty-buffer-4.1.66.Final.jar
+        ├── netty-codec-4.1.66.Final.jar
+        ├── netty-codec-http-4.1.66.Final.jar
+        ├── netty-codec-http2-4.1.66.Final.jar
+        ├── netty-common-4.1.66.Final.jar
+        ├── netty-handler-4.1.66.Final.jar
+        ├── netty-nio-client-2.16.88.jar
+        ├── netty-reactive-streams-2.0.5.jar
+        ├── netty-reactive-streams-http-2.0.5.jar
+        ├── netty-resolver-4.1.66.Final.jar
+        ├── netty-transport-4.1.66.Final.jar
+        ├── netty-transport-native-epoll-4.1.66.Final-linux-x86_64.jar
+        ├── netty-transport-native-unix-common-4.1.66.Final.jar
+        ├── okhttp-4.8.1.jar
+        ├── okio-2.7.0.jar
+        ├── profiles-2.16.88.jar
+        ├── protobuf-java-3.13.0.jar
+        ├── protocol-core-2.16.88.jar
+        ├── reactive-streams-1.0.3.jar
+        ├── regions-2.16.88.jar
+        ├── retrofit-2.9.0.jar
+        ├── sdk-core-2.16.88.jar
+        ├── slf4j-api-1.7.30.jar
+        ├── snappy-java-1.1.8.1.jar
+        ├── sqs-2.16.88.jar
+        ├── utils-2.16.88.jar
+        └── zstd-jni-1.4.9-1.jar
 
 After extracting the we need to add below extra jar inside lib:
 ```sh
