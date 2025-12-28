@@ -5,6 +5,15 @@ Parameters:
   CentralEventBusName:
     Type: String
     Default: central-event-management-bus
+  S3Bucket:
+    Type: String
+    Description: S3 bucket where the enrichment lambda code is stored
+  S3Key:
+    Type: String
+    Description: S3 key for the enrichment lambda code zip file
+  QueueName:
+    Type: String
+    Default: enriched-management-events
 
 Resources:
   ############################
@@ -13,7 +22,7 @@ Resources:
   EnrichedEventsQueue:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: enriched-management-events
+      QueueName: !Ref QueueName
       VisibilityTimeout: 60
       MessageRetentionPeriod: 1209600  # 14 days
     DeletionPolicy: Retain
@@ -36,6 +45,14 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       Policies:
+        - PolicyName: AllowAssumeSourceEC2Reader
+          PolicyDocument: 
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sts:AssumeRole
+                Resource: arn:aws:iam::*:role/central-ec2-tag-reader
         - PolicyName: EnrichmentPermissions
           PolicyDocument:
             Version: "2012-10-17"
@@ -71,8 +88,8 @@ Resources:
         Variables:
           SQS_QUEUE_URL: !Ref EnrichedEventsQueue
       Code:
-        S3Bucket: enrichment-lambda
-        S3Key: central-ec2-event-enrichment.zip
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Ref S3Key
 
   ############################
   # EventBridge Rule
@@ -87,7 +104,7 @@ Resources:
         source:
           - aws.ec2
         detail-type:
-          - EC2 Instance State-change Notification
+          #- EC2 Instance State-change Notification
           - AWS API Call via CloudTrail
       Targets:
         - Id: EnrichmentLambda

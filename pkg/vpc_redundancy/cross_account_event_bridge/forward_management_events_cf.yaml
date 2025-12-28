@@ -49,7 +49,7 @@ Resources:
       EventPattern:
         detail-type:
           - "AWS API Call via CloudTrail"
-          - "EC2 Instance State-change Notification"
+          # - "EC2 Instance State-change Notification"
         source:
           - aws.ec2
       Targets:
