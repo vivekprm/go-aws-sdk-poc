@@ -1,0 +1,110 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Enrich management events from central EventBridge bus and send to SQS
+
+Parameters:
+  CentralEventBusName:
+    Type: String
+    Default: central-event-management-bus
+
+Resources:
+  ############################
+  # SQS Queue
+  ############################
+  EnrichedEventsQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: enriched-management-events
+      VisibilityTimeout: 60
+      MessageRetentionPeriod: 1209600  # 14 days
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+
+  ############################
+  # IAM Role for Lambda
+  ############################
+  EnrichmentLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: central-event-enrichment-role
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: EnrichmentPermissions
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              # Read EC2 tags
+              - Effect: Allow
+                Action:
+                  - ec2:DescribeInstances
+                  - ec2:DescribeTags
+                Resource: "*"
+
+              # Send to SQS
+              - Effect: Allow
+                Action:
+                  - sqs:SendMessage
+                Resource: !GetAtt EnrichedEventsQueue.Arn
+
+  ############################
+  # Enrichment Lambda
+  ############################
+  EnrichmentLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: central-ec2-event-enrichment
+      Runtime: provided.al2023
+      Handler: bootstrap
+      Timeout: 15
+      Architectures:
+      - x86_64
+      Role: !GetAtt EnrichmentLambdaRole.Arn
+      PackageType: Zip
+      Environment:
+        Variables:
+          SQS_QUEUE_URL: !Ref EnrichedEventsQueue
+      Code:
+        S3Bucket: enrichment-lambda
+        S3Key: central-ec2-event-enrichment.zip
+
+  ############################
+  # EventBridge Rule
+  ############################
+  CentralEnrichmentRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: central-enrich-and-forward
+      EventBusName: !Ref CentralEventBusName
+      State: ENABLED
+      EventPattern:
+        source:
+          - aws.ec2
+        detail-type:
+          - EC2 Instance State-change Notification
+          - AWS API Call via CloudTrail
+      Targets:
+        - Id: EnrichmentLambda
+          Arn: !GetAtt EnrichmentLambda.Arn
+
+  ############################
+  # Allow EventBridge to invoke Lambda
+  ############################
+  AllowEventBridgeInvokeLambda:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref EnrichmentLambda
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt CentralEnrichmentRule.Arn
+
+Outputs:
+  QueueUrl:
+    Description: SQS Queue URL
+    Value: !Ref EnrichedEventsQueue

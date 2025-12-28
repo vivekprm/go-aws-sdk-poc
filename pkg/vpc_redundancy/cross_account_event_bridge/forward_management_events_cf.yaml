@@ -1,0 +1,63 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Forward AWS management events to a central EventBridge bus
+
+Parameters:
+  TargetAccountId:
+    Type: String
+    Description: Target AWS account ID
+
+  TargetRegion:
+    Type: String
+    Default: us-east-1
+    Description: Region where the target EventBus exists
+
+  TargetEventBusName:
+    Type: String
+    Default: central-event-management-bus
+  
+  CentralEventBusArn:
+    Type: String
+    Description: ARN of central EventBridge bus
+
+Resources:
+  EventBridgePutEventsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: eventbridge-put-events-role
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: AllowPutEventsToCentralBus
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - events:PutEvents
+                Resource: !Ref CentralEventBusArn
+  ForwardManagementEventsRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: forward-management-events
+      Description: Forward AWS management events to central account
+      State: ENABLED
+      EventPattern:
+        detail-type:
+          - "AWS API Call via CloudTrail"
+          - "EC2 Instance State-change Notification"
+        source:
+          - aws.ec2
+      Targets:
+        - Id: SendToCentralBus
+          Arn: !Sub arn:aws:events:${TargetRegion}:${TargetAccountId}:event-bus/${TargetEventBusName}
+          RoleArn: !GetAtt EventBridgePutEventsRole.Arn
+
+Outputs:
+  RuleName:
+    Description: EventBridge rule name
+    Value: !Ref ForwardManagementEventsRule

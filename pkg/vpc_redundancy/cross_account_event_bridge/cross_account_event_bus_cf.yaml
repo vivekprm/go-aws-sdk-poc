@@ -1,0 +1,27 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  Target account stack. Creates a central EventBridge bus and
+  allows source AWS accounts to put management events.
+
+Parameters:
+  EventBusName:
+    Type: String
+    Default: central-event-management-bus
+    Description: Name of the central EventBridge bus
+
+Resources:
+  #####################################
+  # Central EventBridge Bus
+  #####################################
+  CentralManagementEventBus:
+    Type: AWS::Events::EventBus
+    Properties:
+      Name: !Ref EventBusName
+Outputs:
+  CentralEventBusName:
+    Description: Name of the central EventBridge bus
+    Value: !Ref EventBusName
+
+  CentralEventBusArn:
+    Description: ARN of the central EventBridge bus
+    Value: !GetAtt CentralManagementEventBus.Arn

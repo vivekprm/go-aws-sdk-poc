@@ -1,0 +1,22 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Allow sending events to central EventBridge bus
+
+Parameters:
+  CentralEventBusArn:
+    Type: String
+    Description: ARN of central EventBridge bus
+
+Resources:
+  PutEventsPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: allow-put-events-central-bus
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - events:PutEvents
+            Resource: !Ref CentralEventBusArn
+      Roles:
+        - enrich-events-role-k8c1t81x   # replace with your role name

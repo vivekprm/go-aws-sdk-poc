@@ -1,0 +1,37 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  Role in source account assumed by central account Lambda
+  to read EC2 instance tags for event enrichment.
+
+Parameters:
+  CentralAccountId:
+    Type: String
+    Description: AWS Account ID of the central management account
+
+Resources:
+  CentralEC2TagReaderRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: central-ec2-tag-reader
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${CentralAccountId}:role/central-event-enrichment-role
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: ReadEC2InstanceTags
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:DescribeInstances
+                  - ec2:DescribeTags
+                Resource: "*"
+
+Outputs:
+  CentralEC2TagReaderRoleArn:
+    Description: ARN of the EC2 tag reader role
+    Value: !GetAtt CentralEC2TagReaderRole.Arn
