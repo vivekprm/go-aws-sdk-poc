@@ -1,0 +1,17 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "arn:aws:iam::665096241598:oidc-provider/sts.windows.net/0f4a9737-a4ba-48bd-8174-f54ed1e247e0/v2.0"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "sts.windows.net/0f4a9737-a4ba-48bd-8174-f54ed1e247e0/v2.0:aud": "api://0f4a9737-a4ba-48bd-8174-f54ed1e247e0/AzureEventBridgePublisher"
+        }
+      }
+    }
+  ]
+}
