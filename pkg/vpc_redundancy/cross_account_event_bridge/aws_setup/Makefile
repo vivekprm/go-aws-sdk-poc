@@ -37,8 +37,8 @@ all: deploy
 # -------------------------
 build:
 	mkdir -p $(BUILD_DIR)
-	cd ../../../../go-kafka-sqs-lambda && $(MAKE) clean build zip
-	cp ../../../../go-kafka-sqs-lambda/$(ZIP_FILE) $(BUILD_DIR)/
+	cd ../../../../../go-kafka-sqs-lambda && $(MAKE) clean build zip
+	cp ../../../../../go-kafka-sqs-lambda/$(ZIP_FILE) $(BUILD_DIR)/
 
 create-bucket:
 	aws s3api create-bucket \
