@@ -74,11 +74,11 @@ az functionapp show \
 # In Mac: brew install --cask dotnet-sdk
 func azure functionapp publish $FUNC_APP
 
-# az functionapp function show \
-#   --resource-group $RG \
-#   --name $FUNC_APP \
-#   --query "invokeUrlTemplate" \
-#   -o tsv
+az functionapp function show \
+  --resource-group $RG \
+  --name $FUNC_APP \
+  --query "invokeUrlTemplate" \
+  -o tsv
 
 EVENTGRID_KEY=$(az functionapp keys list \
   -g $RG \
