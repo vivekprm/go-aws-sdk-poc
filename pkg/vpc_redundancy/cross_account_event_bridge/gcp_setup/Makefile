@@ -1,6 +1,6 @@
-AWS_PROFILE := AWS_Personal
+AWS_PROFILE := AWS_HOTMAIL
 AWS_REGION := us-east-1
-export AWS_ACCOUNT_ID := 643716337869
+export AWS_ACCOUNT_ID := 665096241598
 export EVENT_BUS_NAME := central-event-management-bus
 PROJECT_ID := project-fa5880b0-4880-4755-92e
 PROJECT_NUMBER := 657741258816
@@ -8,8 +8,10 @@ PUBSUB_TOPIC := gcp-vm-events
 GCP_REGION := us-central1
 GCP_ZONE := us-central1-a
 CLOUDRUN_APP := gcp-vm-event-bridge
-${shell touch env.mk}
-include env.mk
+CLOUDRUN_URL_FILE := cloudrun_url.txt
+${shell touch ${CLOUDRUN_URL_FILE}}
+SERVICE_ACCOUNT_ID_FILE := service_account_id.txt
+${shell touch ${SERVICE_ACCOUNT_ID_FILE}}
 
 gcp_setup:
 	gcloud config set project ${PROJECT_ID}
@@ -24,18 +26,11 @@ gcp_pubsub: cloudrun_hash
 	gcloud pubsub topics create ${PUBSUB_TOPIC}
 	gcloud logging sinks create gcp-vm-sink \
 		pubsub.googleapis.com/projects/${PROJECT_ID}/topics/${PUBSUB_TOPIC} \
-		--log-filter=' \
-			resource.type="gce_instance" \
-			AND ( \
-			protoPayload.methodName="v1.compute.instances.insert" \
-			OR protoPayload.methodName="v1.compute.instances.delete" \
-			OR protoPayload.methodName="v1.compute.instances.stop" \
-			OR protoPayload.methodName="v1.compute.instances.start" \
-			) \
-		'
+		--log-filter='resource.type="gce_instance" AND (protoPayload.methodName="v1.compute.instances.insert" OR protoPayload.methodName="v1.compute.instances.delete" OR protoPayload.methodName="v1.compute.instances.stop" OR protoPayload.methodName="v1.compute.instances.start")'
+	@CLOUDRUN_URL=$$(cat $(CLOUDRUN_URL_FILE)); \
 	gcloud pubsub subscriptions create gcp-vm-events-sub \
 		--topic ${PUBSUB_TOPIC} \
-		--push-endpoint=https://${CLOUDRUN_URL} \
+		--push-endpoint=$$CLOUDRUN_URL \
 		--push-auth-service-account=eventbridge-publisher@${PROJECT_ID}.iam.gserviceaccount.com
 	
 	gcloud pubsub topics add-iam-policy-binding ${PUBSUB_TOPIC} \
@@ -53,9 +48,14 @@ createvm:
 
 gcp_iam:
 	gcloud iam service-accounts create eventbridge-publisher
+	@sleep 5
+	@gcloud iam service-accounts describe eventbridge-publisher@${PROJECT_ID}.iam.gserviceaccount.com --format="value(uniqueId)"> ${SERVICE_ACCOUNT_ID_FILE}
 	gcloud projects add-iam-policy-binding ${PROJECT_ID} \
 		--member="serviceAccount:eventbridge-publisher@${PROJECT_ID}.iam.gserviceaccount.com" \
 		--role="roles/pubsub.subscriber"
+	gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+  		--member="serviceAccount:eventbridge-publisher@${PROJECT_ID}.iam.gserviceaccount.com" \
+  		--role="roles/iam.serviceAccountTokenCreator"
 
 create-registry:
 	gcloud artifacts repositories create gcr.io \
@@ -80,6 +80,7 @@ cloudrun_deploy: create-registry
 	gcloud projects add-iam-policy-binding ${PROJECT_ID} \
   		--member="serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
   		--role="roles/storage.objectViewer"
+	@CLOUDRUN_URL=$$(cat $(CLOUDRUN_URL_FILE)); \
 	cd ../../../../../go-gcp-sendevent-cloudrun && \
 		gcloud builds submit --tag gcr.io/${PROJECT_ID}/${CLOUDRUN_APP}:latest . && \
 	gcloud run deploy ${CLOUDRUN_APP} \
@@ -87,33 +88,32 @@ cloudrun_deploy: create-registry
 		--platform managed \
 		--region ${GCP_REGION} \
 		--allow-unauthenticated \
-		--set-env-vars \
-    		AWS_ROLE_ARN=arn:aws:iam::${AWS_ACCOUNT_ID}:role/GcpEventBridgePublisher,\
-    		AWS_REGION=${AWS_REGION},\
-			EVENT_BUS_NAME=${EVENT_BUS_NAME}
+		--service-account=eventbridge-publisher@${PROJECT_ID}.iam.gserviceaccount.com \
+		--set-env-vars AWS_ROLE_ARN="arn:aws:iam::${AWS_ACCOUNT_ID}:role/GcpEventBridgePublisher",AWS_REGION="${AWS_REGION}",EVENT_BUS_NAME="${EVENT_BUS_NAME}",AWS_EC2_METADATA_DISABLED=true,GOOGLE_AUDIENCE=$$CLOUDRUN_URL
 
 cloudrun_hash:
-	@cloudrun_url=$$(gcloud run services describe ${CLOUDRUN_APP} \
+	@CLOUDRUN_URL=$$(gcloud run services describe ${CLOUDRUN_APP} \
   		--region ${GCP_REGION} \
   		--format="value(status.url)"); \
-	echo "CLOUDRUN_URL=$$cloudrun_url" > env.mk
+	echo "$$CLOUDRUN_URL" > ${CLOUDRUN_URL_FILE}
 
 aws_iam:
+	SERVICE_ACCOUNT_ID=$$(cat ${SERVICE_ACCOUNT_ID_FILE});\
+	export SERVICE_ACCOUNT_ID; \
 	aws iam create-open-id-connect-provider \
   		--url https://accounts.google.com \
-  		--client-id-list sts.amazonaws.com \
-  		--thumbprint-list 9e99a48a9960b14926bb7f3b02e22da0afd10df6 \
-		--profile ${AWS_PROFILE}
-	
+  		--client-id-list $$SERVICE_ACCOUNT_ID \
+  		--thumbprint-list cf23df2207d99a74fbe169e3eba035e633b65d94 \
+		--profile ${AWS_PROFILE}; \
 	envsubst < trust-policy.json.tpl > temp-trust-policy.json
-	aws iam create-role \
+	AWS_PAGER="" aws iam create-role \
 		--role-name GcpEventBridgePublisher \
 		--profile ${AWS_PROFILE} \
 		--assume-role-policy-document file://temp-trust-policy.json
 	@rm temp-trust-policy.json
 
 	envsubst < eventbridge-policy.json.tpl > temp-eventbridge-policy.json
-	aws iam create-policy \
+	AWS_PAGER="" aws iam create-policy \
 		--policy-name GcpPutEventsPolicy \
 		--profile ${AWS_PROFILE} \
 		--policy-document file://temp-eventbridge-policy.json
@@ -145,6 +145,9 @@ gcp_cleanup:
 	gcloud compute instances delete test-vm-1 --zone=${GCP_ZONE} -q
 
 aws_cleanup:
+	aws iam delete-open-id-connect-provider \
+  		--open-id-connect-provider-arn arn:aws:iam::${AWS_ACCOUNT_ID}:oidc-provider/accounts.google.com \
+		--profile ${AWS_PROFILE}
 	aws iam detach-role-policy \
 		--role-name GcpEventBridgePublisher \
 		--policy-arn arn:aws:iam::${AWS_ACCOUNT_ID}:policy/GcpPutEventsPolicy \
@@ -155,10 +158,7 @@ aws_cleanup:
 	aws iam delete-role \
 		--role-name GcpEventBridgePublisher \
 		--profile ${AWS_PROFILE}
-	aws iam delete-open-id-connect-provider \
-  		--url https://accounts.google.com \
-		--profile ${AWS_PROFILE}
 
 clean: gcp_cleanup aws_cleanup
-	rm -f env.mk
+	rm -f ${CLOUDRUN_URL_FILE} ${SERVICE_ACCOUNT_ID_FILE}
 	

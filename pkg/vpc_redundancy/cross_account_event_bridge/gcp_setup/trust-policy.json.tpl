@@ -4,12 +4,12 @@
     {
       "Effect": "Allow",
       "Principal": {
-        "Federated": "accounts.google.com"
+        "Federated": "arn:aws:iam::${AWS_ACCOUNT_ID}:oidc-provider/accounts.google.com"
       },
       "Action": "sts:AssumeRoleWithWebIdentity",
       "Condition": {
         "StringEquals": {
-          "accounts.google.com:aud": "sts.amazonaws.com"
+          "accounts.google.com:aud": ${SERVICE_ACCOUNT_ID}
         }
       }
     }
