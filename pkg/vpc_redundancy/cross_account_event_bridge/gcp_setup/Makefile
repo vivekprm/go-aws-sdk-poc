@@ -80,16 +80,22 @@ cloudrun_deploy: create-registry
 	gcloud projects add-iam-policy-binding ${PROJECT_ID} \
   		--member="serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
   		--role="roles/storage.objectViewer"
-	@CLOUDRUN_URL=$$(cat $(CLOUDRUN_URL_FILE)); \
+	
 	cd ../../../../../go-gcp-sendevent-cloudrun && \
-		gcloud builds submit --tag gcr.io/${PROJECT_ID}/${CLOUDRUN_APP}:latest . && \
+		gcloud builds submit --tag gcr.io/${PROJECT_ID}/${CLOUDRUN_APP}:latest .
 	gcloud run deploy ${CLOUDRUN_APP} \
 		--image gcr.io/${PROJECT_ID}/${CLOUDRUN_APP}:latest \
 		--platform managed \
 		--region ${GCP_REGION} \
 		--allow-unauthenticated \
 		--service-account=eventbridge-publisher@${PROJECT_ID}.iam.gserviceaccount.com \
-		--set-env-vars AWS_ROLE_ARN="arn:aws:iam::${AWS_ACCOUNT_ID}:role/GcpEventBridgePublisher",AWS_REGION="${AWS_REGION}",EVENT_BUS_NAME="${EVENT_BUS_NAME}",AWS_EC2_METADATA_DISABLED=true,GOOGLE_AUDIENCE=$$CLOUDRUN_URL
+		--set-env-vars AWS_ROLE_ARN="arn:aws:iam::${AWS_ACCOUNT_ID}:role/GcpEventBridgePublisher",AWS_REGION="${AWS_REGION}",EVENT_BUS_NAME="${EVENT_BUS_NAME}",AWS_EC2_METADATA_DISABLED=true
+
+update-env: 
+	@CLOUDRUN_URL=$$(cat $(CLOUDRUN_URL_FILE)); \
+	gcloud run services update ${CLOUDRUN_APP} \
+		--region ${GCP_REGION} \
+		--update-env-vars GOOGLE_AUDIENCE=$$CLOUDRUN_URL
 
 cloudrun_hash:
 	@CLOUDRUN_URL=$$(gcloud run services describe ${CLOUDRUN_APP} \
@@ -123,7 +129,7 @@ aws_iam:
 		--policy-arn arn:aws:iam::${AWS_ACCOUNT_ID}:policy/GcpPutEventsPolicy \
 		--profile ${AWS_PROFILE}
 
-release: gcp_setup gcp_iam cloudrun_deploy gcp_pubsub createvm aws_iam
+release: gcp_setup gcp_iam cloudrun_deploy gcp_pubsub update-env createvm aws_iam
 
 gcp_cleanup:
 	gcloud projects remove-iam-policy-binding ${PROJECT_ID} \

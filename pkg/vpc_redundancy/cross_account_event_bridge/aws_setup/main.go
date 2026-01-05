@@ -53,6 +53,14 @@ func Consume(cli *sqs.Client, msgChan chan Message, queueUrl string) {
 		}
 		for _, msg := range out.Messages {
 			msgChan <- Message{Body: *msg.Body}
+			_, err := cli.DeleteMessage(context.Background(), &sqs.DeleteMessageInput{
+				QueueUrl: aws.String(queueUrl),
+				ReceiptHandle: out.Messages[0].ReceiptHandle,
+			})
+			if err != nil {
+				log.Fatalln("error in deleting msg", err)
+				close(msgChan)
+			}
 		}
 	}
 }

@@ -123,7 +123,7 @@ consumer:
 	go run main.go $(CENTRAL_ACCOUNT) $(QUEUE_NAME) $(CENTRAL_PROFILE) $(CENTRAL_REGION)
 # Full pipeline
 # -------------------------
-release: build upload deploy consumer
+release: build upload deploy 
 
 # -------------------------
 # Cleanup

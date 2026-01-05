@@ -56,10 +56,15 @@ eventgrid:
 		--endpoint-type azurefunction \
 		--endpoint "/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RG}/providers/Microsoft.Web/sites/${FUNC_APP}/functions/EventGridTrigger" \
 		--included-event-types \
-			Microsoft.Compute.VirtualMachines.Start/action \
-			Microsoft.Compute.VirtualMachines.Deallocate/action \
-    		Microsoft.Compute.VirtualMachines.Write \
-    		Microsoft.Compute.VirtualMachines.Deallocate
+			Microsoft.Resources.ResourceDeleteSuccess \
+			Microsoft.Resources.ResourceDeleteCancel \
+			Microsoft.Resources.ResourceDeleteFailure \
+			Microsoft.Resources.ResourceWriteSuccess \
+			Microsoft.Resources.ResourceWriteCancel \
+			Microsoft.Resources.ResourceWriteFailure \
+			Microsoft.Resources.ResourceActionSuccess \
+			Microsoft.Resources.ResourceActionFailure \
+			Microsoft.Resources.ResourceActionCancel	
 createvm:
 	az vm create \
 		--resource-group ${RG} \
