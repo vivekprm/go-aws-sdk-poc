@@ -56,6 +56,8 @@ eventgrid:
 		--endpoint-type azurefunction \
 		--endpoint "/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RG}/providers/Microsoft.Web/sites/${FUNC_APP}/functions/EventGridTrigger" \
 		--included-event-types \
+			Microsoft.Compute.VirtualMachines.Start/action \
+			Microsoft.Compute.VirtualMachines.Deallocate/action \
     		Microsoft.Compute.VirtualMachines.Write \
     		Microsoft.Compute.VirtualMachines.Deallocate
 createvm:
@@ -71,6 +73,10 @@ createvm:
 thumbprint:
 	@AZURE_THUMBPRINT=$$(openssl x509 -in ms-root.pem -fingerprint -sha1 -noout | cut -d= -f2 | tr -d ':' | tr 'A-F' 'a-f') && \
 	echo "THUMBPRINT=$$AZURE_THUMBPRINT" > env.mk
+
+azure_tenant_name:
+	@AZURE_TENANT_ID=$$(az account show --query tenantId -o tsv); \
+	echo "$$AZURE_TENANT_ID" > ${TENANT_ID_FILE}
 
 aws_oidc:
 	@AZURE_TENANT_ID=$$(cat ${TENANT_ID_FILE}); \
@@ -158,10 +164,10 @@ azure_cleanup:
 	az ad app delete --id $$APP_ID
 	az eventgrid system-topic delete --name ${EVENT_TOPIC} --resource-group ${RG} --yes
 	az vm delete --resource-group ${RG} --name vm-monitor-01 --yes
-	az eventgrid event-subscription delete --name ${EVENT_SUBSCRIPTION} --source-resource-id "/subscriptions/${SUBSCRIPTION_ID}" --yes
+	az eventgrid event-subscription delete --name ${EVENT_SUBSCRIPTION} --source-resource-id "/subscriptions/${SUBSCRIPTION_ID}"
 	az group delete --name ${RG} --yes --no-wait
 
-aws_cleanup:
+aws_cleanup: azure_tenant_name
 	@AZURE_TENANT_ID=$$(cat ${TENANT_ID_FILE}); \
 	aws iam delete-open-id-connect-provider \
 		--open-id-connect-provider-arn arn:aws:iam::${AWS_ACCOUNT_ID}:oidc-provider/sts.windows.net/$$AZURE_TENANT_ID/ \
