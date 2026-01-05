@@ -14,7 +14,9 @@ Parameters:
   QueueName:
     Type: String
     Default: enriched-management-events
-
+  EventBridgeRuleIAMRoleArn:
+    Type: String
+    Description: ARN of the IAM Role that EventBridge will use to send events to SQS
 Resources:
   ############################
   # SQS Queue
@@ -81,7 +83,7 @@ Resources:
       Handler: bootstrap
       Timeout: 15
       Architectures:
-      - x86_64
+      - arm64
       Role: !GetAtt EnrichmentLambdaRole.Arn
       PackageType: Zip
       Environment:
@@ -94,6 +96,24 @@ Resources:
   ############################
   # EventBridge Rule
   ############################
+  OtherProvidersEventsRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: other-cloud-providers-events
+      EventBusName: !Ref CentralEventBusName
+      State: ENABLED
+      EventPattern:
+        source:
+          - azure.activitylog
+          - gcp.compute
+        detail-type:
+          #- EC2 Instance State-change Notification
+          - Events from other cloud providers
+      Targets:
+        - Arn: !GetAtt EnrichedEventsQueue.Arn
+          Id: SQSQueueTarget
+          RoleArn: !Ref EventBridgeRuleIAMRoleArn
+
   CentralEnrichmentRule:
     Type: AWS::Events::Rule
     Properties:

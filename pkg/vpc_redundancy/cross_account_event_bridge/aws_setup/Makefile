@@ -96,6 +96,7 @@ deploy:
 		S3Bucket=$(LAMBDA_NAME) \
 		S3Key=$(ARTIFACT_KEY) \
 		QueueName=$(QUEUE_NAME) \
+		EventBridgeRuleIAMRoleArn=arn:aws:iam::$(CENTRAL_ACCOUNT):role/service-role/Amazon_EventBridge_Invoke_Sqs_1043361791 \
 		--capabilities CAPABILITY_NAMED_IAM
 
 # 	step 5
@@ -130,15 +131,11 @@ release: build upload deploy
 # -------------------------
 clean:
 	aws cloudformation delete-stack \
-		--stack-name $(STACK_NAME_PREFIX)-v1 \
+		--stack-name $(STACK_NAME_PREFIX)-$(STACK_NAME) \
 		--region $(CENTRAL_REGION) \
 		--profile $(CENTRAL_PROFILE)
 	aws cloudformation delete-stack \
 		--stack-name $(STACK_NAME_PREFIX)-target-permission-v1 \
-		--region $(CENTRAL_REGION) \
-		--profile $(CENTRAL_PROFILE)
-	aws cloudformation delete-stack \
-		--stack-name $(STACK_NAME_PREFIX)-$(STACK_NAME) \
 		--region $(CENTRAL_REGION) \
 		--profile $(CENTRAL_PROFILE)
 	aws cloudformation delete-stack \
@@ -149,6 +146,10 @@ clean:
 		--stack-name central-ec2-tag-reader \
 		--region $(SOURCE_REGION) \
 		--profile $(SOURCE_PROFILE)
+	aws cloudformation delete-stack \
+		--stack-name $(STACK_NAME_PREFIX)-v1 \
+		--region $(CENTRAL_REGION) \
+		--profile $(CENTRAL_PROFILE)
 	aws s3api delete-object \
 		--bucket $(LAMBDA_NAME) \
 		--key $(ARTIFACT_KEY) \
@@ -158,9 +159,4 @@ clean:
 		--bucket $(LAMBDA_NAME) \
 		--profile $(CENTRAL_PROFILE) \
 		--region $(CENTRAL_REGION)
-	aws events remove-permission \
-		--region $(CENTRAL_REGION) \
-		--profile $(CENTRAL_PROFILE) \
-		--event-bus-name central-event-management-bus \
-		--statement-id AllowSourceAccount$(SOURCE_ACCOUNT)
 	rm -rf $(BUILD_DIR)
