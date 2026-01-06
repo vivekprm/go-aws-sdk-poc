@@ -106,9 +106,6 @@ Resources:
         source:
           - azure.activitylog
           - gcp.compute
-        detail-type:
-          #- EC2 Instance State-change Notification
-          - Events from other cloud providers
       Targets:
         - Arn: !GetAtt EnrichedEventsQueue.Arn
           Id: SQSQueueTarget
