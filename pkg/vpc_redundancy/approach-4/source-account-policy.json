@@ -1,0 +1,26 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "CreateLambdaFunction",
+      "Effect": "Allow",
+      "Action": "lambda:CreateFunction",
+      "Resource": "*"
+    },
+    {
+        "Sid": "IamPassRole",
+        "Effect": "Allow",
+        "Action": "iam:PassRole",
+        "Resource": "*"
+    },
+    {
+        "Sid": "VisualEditor0",
+        "Effect": "Allow",
+        "Action": [
+            "events:PutTargets",
+            "events:PutRule"
+        ],
+        "Resource": "*"
+    }
+  ]
+}

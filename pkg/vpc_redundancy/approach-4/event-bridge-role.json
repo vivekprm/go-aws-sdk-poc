@@ -1,0 +1,19 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "TrustEventBridgeService",
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "events.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole",
+            "Condition": {
+                "StringEquals": {
+                    "aws:SourceArn": "arn:aws:events:ap-south-1:643716337869:rule/to-vpc-redundancy-lambda",
+                    "aws:SourceAccount": "643716337869"
+                }
+            }
+        }
+    ]
+}
